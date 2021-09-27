@@ -1,3 +1,13 @@
+/*
+-make dodging less jank
+-change emitter life / path duration stuff
+-rework constructors and parameter setting mess
+-make defining levels more concise, load levels from text file?
+-make levels
+-add level "scripting"
+-add boss fights
+*/
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -18,7 +28,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
     ArrayList[] LISTS = new ArrayList[]{pList, projList, emitList, movList, drawList};
 
-    int[] control = new int[4];
+    //int[] control = new int[4];
 
     Player player = new Player(960, 540);
 
@@ -34,7 +44,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     int fc = 0;
 
     final int WINDOWBAR_WIDTH = 85;
-    final int PLAYER_MAX_SPEED = 3;
+    final int PLAYER_MAX_SPEED = 10;
     final int PLAYER_WIDTH = 50;
     int SCREEN_WIDTH, SCREEN_HEIGHT;
     
@@ -56,6 +66,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         player.hp = player.maxHP = 30;
         player.size = 25;
         player.allegiance = 0;
+        player.decayFactor = .9;
 
         //TODO temp code spawn players at start
         for(int i = 0; i < 0; i++)
@@ -88,7 +99,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         test.life = 15000;
         test.mortal = true;
 
-        Emitter test2 = new Emitter(960, 540, 20000);
+        Emitter test2 = new Emitter(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0, 20000);
         test2.props = new double[]{20, 6, 1, .01, 1000};
         test2.type = 2;
         test2.mortal = true;
@@ -138,8 +149,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         ArrayList<Emitter> emitgtwo = new ArrayList<Emitter>();
         
-        emitgzero.add(test);
-        playgzero.add(new Player(500, 500, 1, 1));
+        //emitgzero.add(test);
+        //playgzero.add(new Player(500, 500, 1, 1));
 
         playgone.add(new Player(300, 400));
         playgone.add(new Player(200, 21, 10, 10));
@@ -304,6 +315,19 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
     }
 
+    void dodge(Player p)
+    {
+
+        if(p.iFrames < 30)
+            p.iFrames = 30;
+
+        p.rFrames = 100;
+
+        p.xVel += 7 * (p.control[2] + p.control[3]);
+        p.yVel += 7 * (p.control[0] + p.control[1]);
+
+    }
+
     //draws graphics to display
     public void paintComponent(Graphics g)
     {
@@ -328,8 +352,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     {
 
         //updates player-controlled player's controls, really regretting the naming choices now
-        player.xVel += (control[2] + control[3]) * .1;
-        player.yVel += (control[0] + control[1]) * .1;
+        player.x += (player.control[2] + player.control[3]) * 2;
+        player.y += (player.control[0] + player.control[1]) * 2;
 
         for(Mobile m : movList)
         {
@@ -410,6 +434,12 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             p.cooldown -= p.cooldown > 0 ? 1 : 0;
 
+            if(player.rFrames > 0)
+                player.rFrames--;
+
+            if(player.iFrames > 0)
+                player.iFrames--;
+
         }
 
         //projectile specific code
@@ -434,7 +464,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 Player p = pList.get(j);
 
                 //player hit detection, uses bounding box instead of circular collisions because maybe faster?
-                if(proj.allegiance != p.allegiance && Math.abs(p.getX() - proj.getX()) < (proj.getSize() / 2.0 + p.getSize() / 2.0) && Math.abs(p.getY() - proj.getY()) < (proj.getSize() / 2.0 + p.getSize() / 2.0))
+                if(proj.allegiance != p.allegiance && p.iFrames == 0 &&Math.abs(p.getX() - proj.getX()) < (proj.getSize() / 2.0 + p.getSize() / 2.0) && Math.abs(p.getY() - proj.getY()) < (proj.getSize() / 2.0 + p.getSize() / 2.0))
                 {
 
                     p.hp -= 5;
@@ -578,7 +608,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         levelTime += t.getDelay();
 
-        if(fc % 50 == -1 && fc < 1000)
+        if(fc % 200 == 0 && fc < 1000)
         {
 
             explode(rand(0, 300), rand(0, SCREEN_HEIGHT), 25, 1);
@@ -604,19 +634,19 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         {
 
             case KeyEvent.VK_W:
-                control[0] = -1;
+                player.control[0] = -1;
                 break;
 
             case KeyEvent.VK_S:
-                control[1] = 1;
+                player.control[1] = 1;
                 break;
 
             case KeyEvent.VK_A:
-                control[2] = -1;
+                player.control[2] = -1;
                 break;
 
             case KeyEvent.VK_D:
-                control[3] = 1;
+                player.control[3] = 1;
                 break;
 
             case KeyEvent.VK_UP:
@@ -635,6 +665,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 player.fireDir[1] = 1;
                 break;
 
+            case KeyEvent.VK_SPACE:
+                if(player.rFrames == 0)
+                    dodge(player);
+                break;
+
         }
 
         
@@ -649,19 +684,19 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         {
 
             case KeyEvent.VK_W:
-                control[0] = 0;
+                player.control[0] = 0;
                 break;
 
             case KeyEvent.VK_S:
-                control[1] = 0;
+                player.control[1] = 0;
                 break;
 
             case KeyEvent.VK_A:
-                control[2] = 0;
+                player.control[2] = 0;
                 break;
 
             case KeyEvent.VK_D:
-                control[3] = 0;
+                player.control[3] = 0;
                 break;
 
             case KeyEvent.VK_UP:

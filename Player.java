@@ -4,8 +4,8 @@ public class Player implements Mobile, Drawable, Shooter
 {
     //final int PLAYER_WIDTH = 50;
     double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98;
-    int cooldown = 0, maxCooldown = 5, hp = 100, maxHP = 100, spread = 1, size = 50, allegiance = 1, dir;
-    int[] fireDir = new int[4];
+    int cooldown = 0, maxCooldown = 5, hp = 100, maxHP = 100, spread = 1, size = 50, allegiance = 1, dir, rFrames = 0, iFrames;
+    int[] fireDir = new int[4], control = new int[4];
 
     Player()
     {
@@ -150,6 +150,10 @@ public class Player implements Mobile, Drawable, Shooter
     @Override
     public Color getColor() 
     {
+
+        // if(iFrames != 0)
+        //     return Color.WHITE;
+
         int redChanel = 255 - (int) map(hp, maxHP, 0, 255, 0);
 
         return new Color(redChanel > 255 ? 255 : redChanel < 0 ? 0 : redChanel, 0, 0);
