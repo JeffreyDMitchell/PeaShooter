@@ -18,7 +18,7 @@ public class Main
 
         System.setProperty("sun.java2d.opengl", "true");
 
-        JFrame f = new JFrame();
+        JFrame f = new JFrame("Pea Shooter!");
 
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setResizable(false);

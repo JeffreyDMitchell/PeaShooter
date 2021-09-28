@@ -318,13 +318,17 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     void dodge(Player p)
     {
 
+        //really jank way of keeping player from dodging in place. same as if p.control[0] == 0 && p.control[1] == 0 && .... probably worse tbh. oh well, only happens when dodging, so low impact
+        if(.1 * p.control[0] + .2 * p.control[1] + .3 * p.control[2] + .4 * p.control[3] == 0)
+            return;
+
         if(p.iFrames < 30)
             p.iFrames = 30;
 
         p.rFrames = 100;
 
-        p.xVel += 7 * (p.control[2] + p.control[3]);
-        p.yVel += 7 * (p.control[0] + p.control[1]);
+        p.xVel += 10 * (p.control[2] + p.control[3]);
+        p.yVel += 10 * (p.control[0] + p.control[1]);
 
     }
 
@@ -342,8 +346,9 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             g.fillOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());
             //g.setColor(Color.WHITE);
             //g.drawOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());
-
         }
+
+        g.drawString(String.valueOf(player.rFrames), (int) player.x, (int) player.y - 100);
 
     }
 
@@ -352,8 +357,13 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     {
 
         //updates player-controlled player's controls, really regretting the naming choices now
-        player.x += (player.control[2] + player.control[3]) * 2;
-        player.y += (player.control[0] + player.control[1]) * 2;
+        if(player.rFrames < 60)
+        {
+
+            player.x += (player.control[2] + player.control[3]) * 2;
+            player.y += (player.control[0] + player.control[1]) * 2;
+
+        }
 
         for(Mobile m : movList)
         {
@@ -434,11 +444,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             p.cooldown -= p.cooldown > 0 ? 1 : 0;
 
-            if(player.rFrames > 0)
-                player.rFrames--;
+            if(p.rFrames > 0)
+                p.rFrames--;
 
-            if(player.iFrames > 0)
-                player.iFrames--;
+            if(p.iFrames > 0)
+                p.iFrames--;
 
         }
 
