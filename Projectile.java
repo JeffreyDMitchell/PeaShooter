@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 
 public class Projectile implements Mobile, Drawable
 {
@@ -161,6 +162,20 @@ public class Projectile implements Mobile, Drawable
     public double getSize() 
     {
         return size;
+    }
+
+    public boolean textured()
+    {
+
+        return false;
+
+    }
+
+    public BufferedImage getImage()
+    {
+
+        return null;
+
     }
 
 }

@@ -1,4 +1,5 @@
 /*
+-CLEAN UP
 -make dodging less jank
 -change emitter life / path duration stuff
 -rework constructors and parameter setting mess
@@ -7,11 +8,16 @@
 -add level "scripting"
 -add boss fights
 */
+//dude this is actually so bad hehe 
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+
 
 public class Panel extends JPanel implements ActionListener, KeyListener
 {
@@ -27,6 +33,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     ArrayList<Emitter> emitList = new ArrayList<Emitter>();
 
     ArrayList[] LISTS = new ArrayList[]{pList, projList, emitList, movList, drawList};
+
+    BufferedImage shipImage;
 
     //int[] control = new int[4];
 
@@ -60,6 +68,19 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         SCREEN_WIDTH = x;
         SCREEN_HEIGHT = y - WINDOWBAR_WIDTH;
 
+        try
+        {
+
+            shipImage = ImageIO.read(new File("./resources/ship.png"));
+
+        }
+        catch(IOException e)
+        {
+
+            System.out.println("uh oh fucky wucky");
+
+        }
+
         setLists(player, new int[]{1, 0, 0, 1, 1});
 
         //TODO temp code
@@ -67,6 +88,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         player.size = 25;
         player.allegiance = 0;
         player.decayFactor = .9;
+        player.textured = true;
+        player.image = shipImage;
 
         //TODO temp code spawn players at start
         for(int i = 0; i < 0; i++)
@@ -109,18 +132,19 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         ArrayList<Emitter> emitgthree = new ArrayList<Emitter>();
         ArrayList<Player> playgthree = new ArrayList<Player>();
 
-        for(int i = 0; i < 4; i++)
-        {
+        for(int j = 0; j < 4; j++)
+            for(int i = 0; i < 4; i++)
+            {
 
-            Emitter temp = new Emitter(new Path(new Point(-40 + (10 * i), 1), new Point(SCREEN_WIDTH + (10 * i), 1)), 10000);
-            temp.type = 3;
-            temp.dir = 2;
-            temp.props = new double[]{2, 4, 0};
-            temp.allegiance = 2;
+                Emitter temp = new Emitter(new Path(new Point(-40 + (10 * i) - (300 * j), 1), new Point(SCREEN_WIDTH + 1200 + (10 * i) - (300 * j), 1)), 10000);
+                temp.type = 3;
+                temp.dir = 2;
+                temp.props = new double[]{2, 4, 0};
+                temp.allegiance = 2;
 
-            emitgthree.add(temp);
+                emitgthree.add(temp);
 
-        }
+            }
 
         double theta = 0;
 
@@ -342,13 +366,24 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         for(Drawable d : drawList)
         {
 
-            g.setColor(d.getColor());
-            g.fillOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());
-            //g.setColor(Color.WHITE);
-            //g.drawOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());
-        }
+            if(d.textured())
+            {
 
-        g.drawString(String.valueOf(player.rFrames), (int) player.x, (int) player.y - 100);
+                BufferedImage image = d.getImage();
+
+
+                g.drawImage(image, (int) (d.getX() - image.getWidth() / 2.0), (int) (d.getY() - image.getHeight() / 2.0), null);
+
+            }
+            else{
+
+                g.setColor(d.getColor());
+                g.fillOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());    
+
+            }
+
+
+        }
 
     }
 
