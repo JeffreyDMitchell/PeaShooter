@@ -1,13 +1,15 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.*;
+import javax.imageio.ImageIO;
 
 public class Player implements Mobile, Drawable, Shooter
 {
     //final int PLAYER_WIDTH = 50;
-    double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98;
+    double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98, rot = 0;
     int cooldown = 0, maxCooldown = 5, hp = 100, maxHP = 100, spread = 1, size = 50, allegiance = 1, dir, rFrames = 0, iFrames;
     boolean textured = false;
-    BufferedImage image;
+    BufferedImage image = null;
     int[] fireDir = new int[4], control = new int[4];
 
     Player()
@@ -104,6 +106,24 @@ public class Player implements Mobile, Drawable, Shooter
 
     }
 
+    public void setImage(String path)
+    {
+
+        try
+        {
+
+            image = ImageIO.read(new File(path));
+
+        }
+        catch(IOException e)
+        {
+
+            System.out.println("UH OHHHHH OOPSY WHOOPSIE");
+
+        }
+
+    }
+
     public int getAllegiance()
     {
 
@@ -163,9 +183,17 @@ public class Player implements Mobile, Drawable, Shooter
     }
 
     @Override
-    public double getSize() {
+    public double getSize() 
+    {
         // TODO Auto-generated method stub
         return size;
+    }
+
+    public double getRot()
+    {
+
+        return rot;
+
     }
 
     public boolean textured()

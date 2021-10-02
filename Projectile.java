@@ -113,6 +113,13 @@ public class Projectile implements Mobile, Drawable
 
     }
 
+    public void setImage(String path)
+    {
+
+        return;
+
+    }
+
     @Override
     public double getX() 
     {
@@ -162,6 +169,13 @@ public class Projectile implements Mobile, Drawable
     public double getSize() 
     {
         return size;
+    }
+
+    public double getRot()
+    {
+
+        return 0;
+
     }
 
     public boolean textured()

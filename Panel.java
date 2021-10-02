@@ -16,6 +16,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.io.*;
 
 
@@ -35,8 +37,6 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     ArrayList[] LISTS = new ArrayList[]{pList, projList, emitList, movList, drawList};
 
     BufferedImage shipImage;
-
-    //int[] control = new int[4];
 
     Player player = new Player(960, 540);
 
@@ -85,7 +85,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         //TODO temp code
         player.hp = player.maxHP = 30;
-        player.size = 25;
+        player.size = 35;
         player.allegiance = 0;
         player.decayFactor = .9;
         player.textured = true;
@@ -152,6 +152,9 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         {
 
             Player temp = new Player(960 + 100 * Math.cos(theta), 540 + 100 * Math.sin(theta));
+
+            temp.setImage("./resources/alien.png");
+            temp.textured = true;
 
             playgthree.add(temp);
 
@@ -371,17 +374,28 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
                 BufferedImage image = d.getImage();
 
+                int width = image.getWidth();
+                int height = image.getHeight();
 
-                g.drawImage(image, (int) (d.getX() - image.getWidth() / 2.0), (int) (d.getY() - image.getHeight() / 2.0), null);
+                //stole the next two lines from stack overflow, no idea how it works
+                AffineTransform tx = AffineTransform.getRotateInstance(d.getRot(), width / 2.0, height / 2.0);
+                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_BILINEAR);
+
+
+                g.drawImage(op.filter(image, null), (int) (d.getX() - width / 2.0), (int) (d.getY() - height / 2.0), null);
+
+                //g.drawImage(image, (int) (d.getX() - width / 2.0), (int) (d.getY() - height / 2.0), null);
 
             }
             else{
 
+                //diameter of ball to be drawn
+                double size = d.getSize();
+
                 g.setColor(d.getColor());
-                g.fillOval((int) (d.getX() - d.getSize() / 2.0), (int) (d.getY() - d.getSize() / 2.0), (int) d.getSize(), (int) d.getSize());    
+                g.fillOval((int) (d.getX() - size / 2.0), (int) (d.getY() - size / 2.0), (int) size, (int) size);    
 
             }
-
 
         }
 
@@ -554,7 +568,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             {
 
                 emit.setX(emit.anchor.getX());
-                emit.setY(emit.anchor.getY()); //TODO remove offset just for demo
+                emit.setY(emit.anchor.getY());
 
             }
 
@@ -666,6 +680,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         fc++;
 
         //draws new frame
+        revalidate(); // no idea what this one is
         repaint();
 
     }
@@ -696,18 +711,22 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             case KeyEvent.VK_UP:
                 player.fireDir[0] = 1;
+                player.rot = 0;
                 break;
 
             case KeyEvent.VK_DOWN:
                 player.fireDir[2] = 1;
+                player.rot = Math.PI;
                 break;
 
             case KeyEvent.VK_LEFT:
                 player.fireDir[3] = 1;
+                player.rot = 3 * Math.PI / 2.0;
                 break;
 
             case KeyEvent.VK_RIGHT:
                 player.fireDir[1] = 1;
+                player.rot = Math.PI / 2.0;
                 break;
 
             case KeyEvent.VK_SPACE:
