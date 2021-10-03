@@ -140,6 +140,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 temp.type = 3;
                 temp.dir = 2;
                 temp.props = new double[]{2, 4, 0};
+                //temp.props = new double[]{2, 1, 10};
+
                 temp.allegiance = 2;
 
                 emitgthree.add(temp);
@@ -354,8 +356,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         p.rFrames = 100;
 
-        p.xVel += 10 * (p.control[2] + p.control[3]);
-        p.yVel += 10 * (p.control[0] + p.control[1]);
+        p.xVel += 13 * (p.control[2] + p.control[3]);
+        p.yVel += 13 * (p.control[0] + p.control[1]);
 
     }
 
@@ -594,7 +596,9 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                     if(fc % emit.props[0] == 0)
                     {
 
-                        Projectile proj = new Projectile(emit, emit.props[1] * 2 * Math.sin(Math.PI * emit.dir / 2.0) + rand(-1 * emit.props[2], emit.props[2]), emit.props[1] * -2 * Math.cos(Math.PI * emit.dir / 2.0) + rand(-1 * emit.props[2], emit.props[2]));
+                        Projectile proj = new Projectile(emit, (emit.props[1] * 2 * Math.sin(Math.PI * emit.dir / 2.0) + rand(-1 * emit.props[2], emit.props[2])), (emit.props[1] * -2 * Math.cos(Math.PI * emit.dir / 2.0) + rand(-1 * emit.props[2], emit.props[2])));
+
+                        //Projectile proj = new Projectile(emit, emit.props[1], emit.props[2]);
 
                         setLists(proj, new int[]{0, 1, 0, 1, 1});
 
