@@ -1,7 +1,7 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public interface Drawable extends Positioned
+public interface Drawable extends Positioned, Comparable
 {
 
     public boolean textured();
@@ -12,5 +12,7 @@ public interface Drawable extends Positioned
     public BufferedImage getImage();
     public double getSize();
     public double getRot();
+
+    public int compareTo(Object o);
 
 }

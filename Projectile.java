@@ -192,4 +192,14 @@ public class Projectile implements Mobile, Drawable
 
     }
 
+    public int compareTo(Object o)
+    {
+
+        if(o instanceof Player)
+            return -1;
+
+        return 0;
+
+    }
+
 }

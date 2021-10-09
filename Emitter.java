@@ -15,8 +15,6 @@ public class Emitter implements Mobile, Shooter
         this.path = path;
         this.life = life;
 
-        birth = System.currentTimeMillis();
-
         x = path.getPos(0).x;
         y = path.getPos(0).y;
 
@@ -29,15 +27,11 @@ public class Emitter implements Mobile, Shooter
 
     }
 
-    public Emitter(double x, double y, int life)
+    public Emitter(double x, double y)
     {
 
         this.x = x;
         this.y = y;
-
-        birth = System.currentTimeMillis();
-
-        this.life = life;
 
     }
 

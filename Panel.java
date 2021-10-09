@@ -14,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
@@ -41,6 +42,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     Player player = new Player(960, 540);
 
     Level currentLevel;
+    int levelIndex = 0;
     long levelTime = 0;
 
     Level levelOne;
@@ -88,6 +90,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         player.size = 35;
         player.allegiance = 0;
         player.decayFactor = .9;
+        player.maxCooldown = 50;
+        player.spread = .1;
         player.textured = true;
         player.image = shipImage;
 
@@ -116,13 +120,16 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         levelOne = new Level();
 
+        levels.add(levelOne);
+
         Emitter test = new Emitter(new Path(new Point(0, 0), new Point(500, 500)), 100);
         test.props = new double[]{100, 5, 2, 2, 2};
         test.type = 1;
         test.life = 15000;
         test.mortal = true;
 
-        Emitter test2 = new Emitter(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0, 20000);
+        Emitter test2 = new Emitter(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 2.0);
+        test2.life = 20000;
         test2.props = new double[]{20, 6, 1, .01, 1000};
         test2.type = 2;
         test2.mortal = true;
@@ -147,6 +154,21 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 emitgthree.add(temp);
 
             }
+        // for(int j = 0; j < 4; j++)
+        //     for(int i = 0; i < 100; i++)
+        //     {
+
+        //         Emitter temp = new Emitter(1, map(i, 100, 0, SCREEN_HEIGHT, 0), 1000);
+
+        //         temp.type = 3;
+        //         temp.dir = 1;
+        //         temp.props = new double[]{1000 + j, 1, 0};
+
+        //         temp.allegiance = 2;
+
+        //         emitgthree.add(temp);
+
+        //     }
 
         double theta = 0;
 
@@ -221,7 +243,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         //setLists(BHH, new int[]{0, 0, 1, 0, 0});
         //setLists(CHH, new int[]{0, 0, 1, 0, 0});
 
-        loadLevel(levelOne);
+        loadLevel(levels.get(levelIndex));
 
         t.start();
 
@@ -279,6 +301,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 LISTS[i].remove(o);
 
         }
+
+        //bruh this actually works WHAT hahaha. orders list in such a way that bullets are drawn behind players
+        //maybe only sort list when adding players, move them to front of list, bullets will be added to end by default,
+        if(o instanceof Player)
+            Collections.sort(drawList); //TODO probably bad for performance, runs on each bullet (and player / entity) spawn, sorts drawlist
 
     }
 
@@ -361,6 +388,54 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
     }
 
+    public void levelScripts(int id)
+    {
+
+        switch(id)
+        {
+
+            case 0:
+
+                //level 0 scripts
+
+                if(pList.size() == 1)
+                {
+
+                    player.setImage("./resources/alien.png");
+                    player.maxCooldown = 5;
+                    player.spread = 2;
+
+
+                }
+                else
+                {
+
+                    player.setImage("./resources/ship.png");
+                    player.spread = .1;
+                    player.maxCooldown = 50;
+
+                }
+
+            break;
+
+            case 1:
+
+                //level 1 scripts
+
+            break;
+
+            case 2:
+
+                //level 2 scripts
+
+            break;
+
+        }
+
+        //universal scripts
+
+    }
+
     //draws graphics to display
     public void paintComponent(Graphics g)
     {
@@ -368,8 +443,10 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         super.paintComponent(g);
 
         //draws contents of drawList
-        for(Drawable d : drawList)
+        for(int i = drawList.size() - 1; i >= 0; i--)
         {
+
+            Drawable d = drawList.get(i);
 
             if(d.textured())
             {
@@ -400,6 +477,15 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             }
 
         }
+
+        //draw healthbar
+        g.setColor(Color.RED);
+
+        g.fillRect((int) (SCREEN_WIDTH / 2.0 - map(player.hp, player.maxHP, 0, 200, 0)), (int) (SCREEN_HEIGHT * .95), (int) (2 * map(player.hp, player.maxHP, 0, 200, 0)), 25);
+
+        g.setColor(Color.BLACK);
+
+        g.drawRect((int) (SCREEN_WIDTH / 2.0 - 200), (int) (SCREEN_HEIGHT * .95), 400, 25);
 
     }
 
@@ -509,8 +595,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             Projectile proj = projList.get(i);
 
+            double projX = proj.getX();
+            double projY = proj.getY();
+
             //Deletes offscreen projectiles
-            if(proj.x > SCREEN_WIDTH || proj.x < 0 || proj.y > SCREEN_HEIGHT || proj.y < 0)
+            if(projX > SCREEN_WIDTH || projX < 0 || projY > SCREEN_HEIGHT || projY < 0)
             {
 
                 setLists(proj);
@@ -525,7 +614,9 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 Player p = pList.get(j);
 
                 //player hit detection, uses bounding box instead of circular collisions because maybe faster?
-                if(proj.allegiance != p.allegiance && p.iFrames == 0 &&Math.abs(p.getX() - proj.getX()) < (proj.getSize() / 2.0 + p.getSize() / 2.0) && Math.abs(p.getY() - proj.getY()) < (proj.getSize() / 2.0 + p.getSize() / 2.0))
+                double collideDist = (proj.getSize() + p.getSize()) / 2.0;
+
+                if(proj.allegiance != p.allegiance && p.iFrames == 0 && Math.abs(p.getX() - projX) < collideDist && Math.abs(p.getY() - projY) < collideDist)
                 {
 
                     p.hp -= 5;
@@ -662,12 +753,15 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             currentLevel.Emitters.remove(0);
 
         }
-        else if (currentLevel.Times.size() == 0 && pList.size() == 1 && pList.contains(player))
+        else if (currentLevel.Times.size() == 0 && pList.size() == 1 && pList.contains(player) && false)
         {
 
             //TODO load next level
+            loadLevel(levels.get(++levelIndex));
 
         }
+
+        levelScripts(levelIndex);
 
         levelTime += t.getDelay();
 

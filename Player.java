@@ -6,18 +6,11 @@ import javax.imageio.ImageIO;
 public class Player implements Mobile, Drawable, Shooter
 {
     //final int PLAYER_WIDTH = 50;
-    double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98, rot = 0;
-    int cooldown = 0, maxCooldown = 5, hp = 100, maxHP = 100, spread = 1, size = 50, allegiance = 1, dir, rFrames = 0, iFrames;
+    double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98, rot = 0, spread = 1;
+    int cooldown = 0, maxCooldown = 5, hp = 20, maxHP = 20, size = 50, allegiance = 1, dir, rFrames = 0, iFrames;
     boolean textured = false;
     BufferedImage image = null;
     int[] fireDir = new int[4], control = new int[4];
-
-    Player()
-    {
-
-        x = y = xVel = yVel = 0;
-
-    }
 
     Player(double x, double y)
     {
@@ -215,6 +208,17 @@ public class Player implements Mobile, Drawable, Shooter
 
         return min + ((max - min) * ((val - omin) / (omax - omin)));
 
+    }
+
+    @Override
+    public int compareTo(Object o) 
+    {
+        // TODO Auto-generated method stub
+        if(o instanceof Projectile)
+            return 1;
+
+        return 0;
+        
     }
 
 }
