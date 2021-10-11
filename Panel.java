@@ -41,6 +41,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
     Player player = new Player(960, 540);
 
+    Player testplayer = new Player(500, 500, "./resources/enemyship1.png");
+
     Level currentLevel;
     int levelIndex = 0;
     long levelTime = 0;
@@ -84,6 +86,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         }
 
         setLists(player, new int[]{1, 0, 0, 1, 1});
+        
+        setLists(testplayer, new int[]{1, 0, 0, 1, 1});
 
         //TODO temp code
         player.hp = player.maxHP = 30;
@@ -201,11 +205,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         ArrayList<Emitter> emitgtwo = new ArrayList<Emitter>();
         
         //emitgzero.add(test);
-        //playgzero.add(new Player(500, 500, 1, 1));
+        playgzero.add(testplayer);
 
-        playgone.add(new Player(300, 400));
-        playgone.add(new Player(200, 21, 10, 10));
-        playgone.add(new Player(400, 400));
+        playgone.add(new Player(300, 400, ("./resources/enemyship" + (int) (Math.random() * 2 + 1) + ".png")));
+        playgone.add(new Player(200, 21, 10, 10, ("./resources/enemyship" + (int) (Math.random() * 2 + 1) + ".png")));
+        playgone.add(new Player(400, 400, ("./resources/enemyship" + (int) (Math.random() * 2 + 1) + ".png")));
 
         emitgtwo.add(test2);
 
@@ -398,10 +402,11 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
                 //level 0 scripts
 
+                //script demo
                 if(pList.size() == 1)
                 {
 
-                    player.setImage("./resources/alien.png");
+                    player.setImage("./resources/enemyship1.png");
                     player.maxCooldown = 5;
                     player.spread = 2;
 
@@ -565,7 +570,25 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             }
 
-            //player dies (not player character)
+            if(p != player)
+            {
+
+                //p.rot = Math.atan((p.getY() - player.getY()) / (p.getX() - player.getX())) + Math.PI / 2.0 + (p.getX() - player.getX() <= 0 ? 0 : Math.PI);
+
+                //p.rot = Math.atan((p.getX() - player.getX()) / (p.getY() - player.getY())) + Math.PI / 2.0;
+
+                double y = p.getY() - player.getY();
+                double x = p.getX() - player.getX();
+
+                if(x == 0)
+                    x = Double.MIN_VALUE;
+
+                //rotates players towards PC
+                p.rot = (Math.atan(y / x) + (((x + Math.abs(x)) / (2 * x)) * Math.PI) + (Math.PI / 2.0));
+
+            }
+
+            //player dies
             if(p.hp <= 0)
             {
 

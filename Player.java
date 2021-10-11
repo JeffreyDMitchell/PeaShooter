@@ -32,6 +32,34 @@ public class Player implements Mobile, Drawable, Shooter
 
     }
 
+    Player(double x, double y, String image)
+    {
+
+        this.x = x;
+        this.y = y;
+        decayFactor = .99;
+
+        textured = true;
+        setImage(image);
+
+        System.out.println("huh??");
+
+    }
+
+    Player(double x, double y, double xVel, double yVel, String image)
+    {
+
+        this.x = x;
+        this.y = y;
+        this.xVel = xVel;
+        this.yVel = yVel;
+        decayFactor = .99;
+
+        textured = true;
+        setImage(image);
+
+    }
+
     
 
     public void cXVel(double in) 
