@@ -7,8 +7,9 @@ public class Player implements Mobile, Drawable, Shooter
 {
     //final int PLAYER_WIDTH = 50;
     double x = 0, y = 0, xVel = 0, yVel = 0, decayFactor = .98, rot = 0, spread = 1;
-    int cooldown = 0, maxCooldown = 5, hp = 20, maxHP = 20, size = 50, allegiance = 1, dir, rFrames = 0, iFrames;
-    boolean textured = false;
+    int cooldown = 0, maxCooldown = 5, hp = 20, maxHP = 20, sizeX = 50, sizeY = 50, allegiance = 1, dir, rFrames = 0, iFrames, rammingDmg = 1;
+    Positioned target = null;
+    boolean textured = false, rammingCD = false, alive = true;
     BufferedImage image = null;
     int[] fireDir = new int[4], control = new int[4];
 
@@ -145,6 +146,34 @@ public class Player implements Mobile, Drawable, Shooter
 
     }
 
+    public void setRot(double rot)
+    {
+
+        this.rot = rot;
+
+    }
+
+    public void setRot(Positioned p)
+    {
+
+        setRot(p, 0);
+
+    }
+
+    public void setRot(Positioned p, double offset)
+    {
+
+        double y = this.y - p.getY();
+        double x = this.x - p.getX();
+
+        if(x == 0)
+            x = Double.MIN_VALUE;
+
+        //rotates players towards p
+        this.rot = (Math.atan(y / x) + (((x + Math.abs(x)) / (2 * x)) * Math.PI) + (Math.PI / 2.0)) + offset;
+
+    }
+
     public int getAllegiance()
     {
 
@@ -204,10 +233,17 @@ public class Player implements Mobile, Drawable, Shooter
     }
 
     @Override
-    public double getSize() 
+    public double getSizeX() 
     {
         // TODO Auto-generated method stub
-        return size;
+        return sizeX;
+    }
+
+    public double getSizeY()
+    {
+
+        return sizeY;
+
     }
 
     public double getRot()

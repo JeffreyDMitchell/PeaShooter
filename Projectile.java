@@ -166,9 +166,22 @@ public class Projectile implements Mobile, Drawable
     }
 
     @Override
-    public double getSize() 
+    public double getSizeX() 
     {
         return size;
+    }
+
+    public double getSizeY()
+    {
+
+        return size;
+
+    }
+    public double getSize()
+    {
+
+        return size;
+
     }
 
     public double getRot()

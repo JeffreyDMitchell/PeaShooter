@@ -10,7 +10,8 @@ public interface Drawable extends Positioned, Comparable
 
     public Color getColor();
     public BufferedImage getImage();
-    public double getSize();
+    public double getSizeX();
+    public double getSizeY();
     public double getRot();
 
     public int compareTo(Object o);

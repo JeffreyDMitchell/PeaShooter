@@ -1,7 +1,7 @@
 public class Emitter implements Mobile, Shooter
 {
 
-    double x, y, xVel, yVel;
+    double x, y, xVel, yVel, xOffset = 0, yOffset = 0;
     boolean mortal = false;
     long birth;
     int life, type = 0, allegiance = 1, dir; //0 = dormant, 1 = explosion, 2 = bullethell, 3 = shooter

@@ -20,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.io.*;
+import java.nio.channels.AsynchronousCloseException;
 
 
 public class Panel extends JPanel implements ActionListener, KeyListener
@@ -28,32 +29,32 @@ public class Panel extends JPanel implements ActionListener, KeyListener
     Timer t = new Timer(5, this);
 
     ArrayList<Level> levels = new ArrayList<Level>();
-
     ArrayList<Player> pList = new ArrayList<Player>();
     ArrayList<Projectile> projList = new ArrayList<Projectile>();
     ArrayList<Mobile> movList = new ArrayList<Mobile>();
     ArrayList<Drawable> drawList = new ArrayList<Drawable>();
     ArrayList<Emitter> emitList = new ArrayList<Emitter>();
+    ArrayList<Prompt> promptList = new ArrayList<Prompt>();
 
-    ArrayList[] LISTS = new ArrayList[]{pList, projList, emitList, movList, drawList};
-
-    BufferedImage shipImage;
+    ArrayList[] LISTS = new ArrayList[]{pList, projList, emitList, movList, drawList, promptList};
 
     Player player = new Player(960, 540);
+    Player boss;
 
     Player testplayer = new Player(500, 500, "./resources/enemyship1.png");
 
     Level currentLevel;
-    int levelIndex = 0;
+    int levelIndex = 1;
+    int maxLevel = 1;
     long levelTime = 0;
+    int fc = 0;
+    int bossState = 0;
 
-    Level levelOne;
+    Level levelOne, levelTwo;
 
     Emitter AHH;
     Emitter BHH;
     Emitter CHH;
-
-    int fc = 0;
 
     final int WINDOWBAR_WIDTH = 85;
     final int PLAYER_MAX_SPEED = 10;
@@ -72,32 +73,33 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         SCREEN_WIDTH = x;
         SCREEN_HEIGHT = y - WINDOWBAR_WIDTH;
 
-        try
+        //testing nonsense
         {
 
-            shipImage = ImageIO.read(new File("./resources/ship.png"));
+        // try
+        // {
 
-        }
-        catch(IOException e)
-        {
+        //     shipImage = ImageIO.read(new File("./resources/ship.png"));
 
-            System.out.println("uh oh fucky wucky");
+        // }
+        // catch(IOException e)
+        // {
 
-        }
+        //     System.out.println("uh oh fucky wucky");
 
-        setLists(player, new int[]{1, 0, 0, 1, 1});
-        
-        setLists(testplayer, new int[]{1, 0, 0, 1, 1});
+        // }
 
         //TODO temp code
-        player.hp = player.maxHP = 30;
-        player.size = 35;
+        player.hp = player.maxHP = 3000;
+        player.sizeX = 35;
+        player.sizeY = 35;
         player.allegiance = 0;
         player.decayFactor = .9;
         player.maxCooldown = 50;
         player.spread = .1;
         player.textured = true;
-        player.image = shipImage;
+        player.setImage("./resources/ship.png");
+        player.rammingDmg = 1;
 
         //TODO temp code spawn players at start
         for(int i = 0; i < 0; i++)
@@ -107,7 +109,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             p.decayFactor = 1;
 
-            setLists(p, new int[]{1, 0, 0, 1, 1});
+            setLists(p, new int[]{1, 0, 0, 1, 1, 0});
 
         }
 
@@ -123,8 +125,10 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         //AHH = new Emitter(960, 540, 100000);
 
         levelOne = new Level();
+        levelTwo = new Level();
 
         levels.add(levelOne);
+        levels.add(levelTwo);
 
         Emitter test = new Emitter(new Path(new Point(0, 0), new Point(500, 500)), 100);
         test.props = new double[]{100, 5, 2, 2, 2};
@@ -217,7 +221,6 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         levelOne.Emitters.add(emitgzero);
         levelOne.Players.add(playgzero);
-        levelOne.Times.add(0);
 
         levelOne.Emitters.add(emitgone);
         levelOne.Players.add(playgone);
@@ -231,21 +234,66 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         levelOne.Players.add(playgthree);
         levelOne.Times.add(45000);
 
-        //AHH = new Emitter(player);
+        ArrayList<Player> ohboy = new ArrayList<Player>();
 
-        //AHH.type = 1;//BHH.type = 2;
-        //AHH.allegiance = 0;
-        //CHH.type = 1;
+        Player l2player = new Player(50, 50, ("./resources/enemyboss.png"));
+        l2player.sizeX = 320;
+        l2player.sizeY = 135;
+        l2player.setRot(Math.PI);
+        l2player.hp = l2player.maxHP = 750;
+        l2player.rammingDmg = 25;
+        l2player.allegiance = 5; //TODO
+        ohboy.add(l2player);
 
-        //AHH.props = new double[]{3, 10, 2};
+        // Player a = new Player(50, 500, "./resources/enemyship1.png");
+        // a.hp = a.maxHP = 50;
+        // a.rammingDmg = 0;
 
-        //AHH.props = new double[]{15, 5, 2, .01, 500};
-        //BHH.props = new double[]{10, 6, 2, .005};
-        //CHH.props = new double[]{100, 25, 2};
+        // Player b = new Player(350, 500, "./resources/enemyship1.png");
+        // a.hp = a.maxHP = 50;
+        // a.rammingDmg = 1;
 
-        //setLists(AHH, new int[]{0, 0, 1, 0, 0});
-        //setLists(BHH, new int[]{0, 0, 1, 0, 0});
-        //setLists(CHH, new int[]{0, 0, 1, 0, 0});
+        // Player c = new Player(650, 500, "./resources/enemyship1.png");
+        // a.hp = a.maxHP = 50;
+        // a.rammingDmg = 5;
+
+        // Player d = new Player(950, 500, "./resources/enemyship1.png");
+        // a.hp = a.maxHP = 50;
+        // a.rammingDmg = 10;
+
+        // ohboy.add(a);
+        // ohboy.add(b);
+        // ohboy.add(c);
+        // ohboy.add(d);
+
+        for(int i = 0; i < 60; i++)
+        {
+
+            Player a = new Player(Math.random() * SCREEN_WIDTH, Math.random() * SCREEN_HEIGHT, ("./resources/enemyship" + (int) (Math.random() * 2 + 1) + ".png"));
+            a.hp = a.maxHP = 100 + (int) (Math.random() * 200);
+            a.rammingDmg = (int) (Math.random() * 10 + 1);
+            a.allegiance = i;
+            a.target = player;
+
+            ohboy.add(a);
+
+        }
+
+        Prompt testprompt = new Prompt(player, 10000, "I'm just a little goblin");
+        testprompt.duration = 5000;
+        testprompt.font = new Font("Aerial", Font.PLAIN, 25);
+
+        Prompt anotherPrompt = new Prompt(50, 50, 15000, "What the fuck did you just say about me you little punk?\nI'll ahve you know I'm a US navy seal\nblah blah blah\ni just need more text tbh\nI'm gonna keap it up wahoo wahoo this is a test of the prompt system,\nmaybe i can test my typing seed too!\nI'd like to maybe add some fancy stuff, like changing font / style mid string,\nmaybe i could have some zany effects\nlike shaking in the mix. not right now though, this is just a test");
+        anotherPrompt.duration = 5000;
+        anotherPrompt.font = new Font("TimesRoman", Font.PLAIN, 50);
+
+        //levelTwo.Prompts.add(testprompt);
+        //levelTwo.Prompts.add(anotherPrompt);
+
+        levelTwo.Players.add(ohboy);
+        levelTwo.Times.add(10);
+
+        }  
 
         loadLevel(levels.get(levelIndex));
 
@@ -263,13 +311,17 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         }
 
-        setLists(player, new int[]{1, 0, 0, 1, 1});
+        setLists(player, new int[]{1, 0, 0, 1, 1, 0});
 
         player.hp = player.maxHP;
 
         currentLevel = level;
 
         levelTime = 0;
+
+        initPhase();
+
+        levelLoadScripts(levelIndex); //kinda bad, loadlevel works for generic levels, levelloadscripts takes a level index
 
     }
 
@@ -309,7 +361,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         //bruh this actually works WHAT hahaha. orders list in such a way that bullets are drawn behind players
         //maybe only sort list when adding players, move them to front of list, bullets will be added to end by default,
         if(o instanceof Player)
-            Collections.sort(drawList); //TODO probably bad for performance, runs on each bullet (and player / entity) spawn, sorts drawlist
+            Collections.sort(drawList); //TODO probably bad for performance, runs on each player spawn, sorts drawlist
 
     }
 
@@ -348,7 +400,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             Projectile proj = new Projectile(p, Math.sin(theta) * speed, Math.cos(theta) * speed);
 
-            setLists(proj, new int[]{0, 1, 0, 1, 1});
+            setLists(proj, new int[]{0, 1, 0, 1, 1, 0});
 
             theta += 2 * Math.PI / count;
 
@@ -367,7 +419,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             Projectile proj = new Projectile(x, y, Math.sin(theta) * speed, Math.cos(theta) * speed);
 
-            setLists(proj, new int[]{0, 1, 0, 1, 1});
+            setLists(proj, new int[]{0, 1, 0, 1, 1, 0});
 
             theta += 2 * Math.PI / count;
 
@@ -389,6 +441,78 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
         p.xVel += 13 * (p.control[2] + p.control[3]);
         p.yVel += 13 * (p.control[0] + p.control[1]);
+
+    }
+
+    void initPhase()
+    {
+
+            if(currentLevel.Players.size() > 0)
+            {
+
+                for(Player p : currentLevel.Players.get(0))
+                {
+
+                    setLists(p, new int[]{1, 0, 0, 1, 1, 0});
+
+                }
+
+                currentLevel.Players.remove(0);
+
+            }
+
+            if(currentLevel.Emitters.size() > 0)
+            {
+
+                for(Emitter emit : currentLevel.Emitters.get(0))
+                {
+
+                    emit.birth = System.currentTimeMillis();
+                    setLists(emit, new int[]{0, 0, 1, 0, 0, 0});
+
+                }
+
+                currentLevel.Emitters.remove(0);
+
+            }
+
+            if(currentLevel.Prompts.size() > 0)
+            {
+
+                currentLevel.Prompts.get(0).birth = levelTime;
+                setLists(currentLevel.Prompts.get(0), new int[]{0, 0, 0, 0, 0, 1});
+
+                currentLevel.Prompts.remove(0);
+
+            }
+
+    }
+
+    public void levelLoadScripts(int id)
+    {
+
+        switch(id)
+        {
+
+            case 0:
+
+            break;
+
+            case 1:
+
+                boss = pList.get(1);
+
+            break;
+
+            case 2:
+
+            break;
+
+            default:
+
+            break;
+
+        }
 
     }
 
@@ -421,9 +545,78 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
                 }
 
+                if(fc % 200 == 0 && fc < 1000)
+                {
+
+                    explode(rand(0, 300), rand(0, SCREEN_HEIGHT), 25, 1);
+                    explode(rand(SCREEN_WIDTH - 300, SCREEN_WIDTH), rand(0, SCREEN_HEIGHT), 25, 1);
+
+                }
+
             break;
 
             case 1:
+
+            if(pList.size() > 1)
+            {
+
+                switch(bossState)
+                {
+
+                    case 0:
+
+                        boss.x = (SCREEN_WIDTH / 2.0) + (Math.sin(fc / 100.0)) * (SCREEN_WIDTH / 2.0);
+                        boss.y += (-3 * Math.sin(fc / 77.0)) + ((player.y - boss.y) * .02);
+
+                        if(boss.hp < boss.maxHP * .50)
+                            bossState = 1;
+                            
+
+                    break;
+
+                    case 1:
+
+                        if(boss.alive)
+                        {
+
+                            //if(boss.x != player.x)
+                            boss.x += 2 * (player.x - boss.x) / Math.abs(boss.x - player.x);
+                            boss.y += (50 - boss.y) * .01;
+
+                            if(Math.abs(boss.x - player.x) < 150)
+                            {
+
+                                Projectile left = new Projectile(boss.x - 118 + (Math.random() * 30) - 15, boss.y, 0, 25);
+                                Projectile right = new Projectile(boss.x + 118 + (Math.random() * 30) - 15, boss.y, 0, 25);
+
+                                //left.source = right.source = boss;
+
+                                left.allegiance = 5;
+                                right.allegiance = 5;
+
+                                setLists(left, new int[]{0, 1, 0, 1, 1, 0});
+                                setLists(right, new int[]{0, 1, 0, 1, 1, 0});
+
+
+                            }
+
+                        }
+
+                    break;
+
+                    case 2:
+
+                    boss.x = boss.y = 200;
+
+                    break;
+
+                    default:
+
+                    break;
+
+                }
+
+            }
 
                 //level 1 scripts
 
@@ -467,6 +660,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
 
                 g.drawImage(op.filter(image, null), (int) (d.getX() - width / 2.0), (int) (d.getY() - height / 2.0), null);
+                
 
                 //g.drawImage(image, (int) (d.getX() - width / 2.0), (int) (d.getY() - height / 2.0), null);
 
@@ -474,10 +668,35 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             else{
 
                 //diameter of ball to be drawn
-                double size = d.getSize();
+                double sizeX = d.getSizeX();
+                double sizeY = d.getSizeY();
 
                 g.setColor(d.getColor());
-                g.fillOval((int) (d.getX() - size / 2.0), (int) (d.getY() - size / 2.0), (int) size, (int) size);    
+                g.fillOval((int) (d.getX() - sizeX / 2.0), (int) (d.getY() - sizeY / 2.0), (int) sizeX, (int) sizeY);    
+
+            }
+
+        }
+
+        //draw prompts
+
+        for(Prompt p : promptList)
+        {
+
+            g.setFont(p.font);
+
+            //g.drawString(p.text.substring(0, Math.min(p.text.length(), (int) (p.text.length() * ((levelTime - p.birth) / (double) p.duration)))) + (levelTime % 1000 < 500 ? "|" : ""), (int) p.x, (int) p.y);
+
+            String cropped = p.text.substring(0, Math.min(p.text.length(), (int) (p.text.length() * ((levelTime - p.birth) / (double) p.duration))));
+
+            int i = 0;
+
+            for(String s : cropped.split("\n"))
+            {
+
+                g.drawString(s, (int) p.x, (int) (p.y + (g.getFontMetrics().getHeight() * i)));
+
+                i++;
 
             }
 
@@ -537,20 +756,71 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             }
 
             //player edge collision
-            if(p.x + p.getSize() / 2.0 > SCREEN_WIDTH || p.x - p.getSize() / 2.0 < 0)
+            if(p.x + p.getSizeX() / 2.0 > SCREEN_WIDTH || p.x - p.getSizeX() / 2.0 < 0)
             {
 
                 p.xVel *= -1;
-                p.x =  (p.x + p.getSize() / 2.0 < (SCREEN_WIDTH - p.getSize() / 2.0 - p.x)) ? p.getSize() / 2.0 : SCREEN_WIDTH - p.getSize() / 2.0;
+                p.x =  (p.x + p.getSizeX() / 2.0 < (SCREEN_WIDTH - p.getSizeX() / 2.0 - p.x)) ? p.getSizeX() / 2.0 : SCREEN_WIDTH - p.getSizeX() / 2.0;
 
             }
-            if(p.y + p.getSize() / 2.0 > SCREEN_HEIGHT || p.y - p.getSize() / 2.0 < 0)
+            if(p.y + p.getSizeY() / 2.0 > SCREEN_HEIGHT || p.y - p.getSizeY() / 2.0 < 0)
             {
 
                 p.yVel *= -1;
-                p.y =  (p.y + p.getSize() / 2.0 < (SCREEN_HEIGHT - p.getSize() / 2.0 - p.y)) ? p.getSize() / 2.0 : SCREEN_HEIGHT - p.getSize() / 2.0;
+                p.y =  (p.y + p.getSizeY() / 2.0 < (SCREEN_HEIGHT - p.getSizeY() / 2.0 - p.y)) ? p.getSizeY() / 2.0 : SCREEN_HEIGHT - p.getSizeY() / 2.0;
 
             }
+
+            //player on player collision
+            if(p.rammingDmg > 0)
+            {
+
+                boolean hit = false;
+
+                for(int j = 0; j < pList.size(); j++)
+                {
+
+                    Player q = pList.get(j);
+
+                    if(/*p != q && */p.allegiance != q.allegiance)
+                    {
+
+                        //collision
+                        double pHalfSizeX = p.sizeX / 2.0;
+                        double qHalfSizeX = q.sizeX / 2.0;
+                        double pHalfSizeY = p.sizeY / 2.0;
+                        double qHalfSizeY = q.sizeY / 2.0;
+
+                        if((p.x + pHalfSizeX) > (q.x - qHalfSizeX) && (p.x - pHalfSizeX) < (q.x + qHalfSizeX) && (p.y + pHalfSizeY) > (q.y - qHalfSizeY) && (p.y - pHalfSizeY) < (q.y + qHalfSizeY))
+                        {
+
+                            hit = true;
+
+                            if(!p.rammingCD)
+                            {
+
+                                q.hp -= p.rammingDmg;
+                                p.rammingCD = true;
+
+                            }
+
+                            // q.xVel += ((q.x - p.x) / Math.abs(q.x - p.x)) * (Math.sqrt(p.rammingDmg) / (Math.sqrt(q.rammingDmg)));
+                            // q.yVel += ((q.y - p.y) / Math.abs(q.y - p.y)) * (Math.sqrt(p.rammingDmg) / (Math.sqrt(q.rammingDmg)));
+
+                            q.xVel += ((q.x - p.x) / Math.sqrt(Math.pow(q.x - p.x, 2) + Math.pow(q.y - p.y, 2)) * (Math.sqrt(p.rammingDmg) / (Math.sqrt(q.rammingDmg))));
+                            q.yVel += ((q.y - p.y) / Math.sqrt(Math.pow(q.x - p.x, 2) + Math.pow(q.y - p.y, 2)) * (Math.sqrt(p.rammingDmg) / (Math.sqrt(q.rammingDmg))));
+
+                        }
+
+                    }
+
+                }
+
+                if(!hit)
+                    p.rammingCD = false;
+
+            }
+                
 
             //TODO BLeehhhh 🤮🤮🤮🤮🤮🤮🤮🤮🤮 LMAO remove this
             for(int j = 0; j < p.fireDir.length; j++)
@@ -562,7 +832,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
                     Projectile proj = new Projectile(p, 4 * Math.sin(Math.PI * j / 2.0) + rand(-1 * p.spread, p.spread), -4 * Math.cos(Math.PI * j / 2.0) + rand(-1 * p.spread, p.spread));
 
-                    setLists(proj, new int[]{0, 1, 0, 1, 1});
+                    setLists(proj, new int[]{0, 1, 0, 1, 1, 0});
 
                     break;
 
@@ -570,21 +840,14 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
             }
 
-            if(p != player)
+            if(p.target != null)
             {
 
                 //p.rot = Math.atan((p.getY() - player.getY()) / (p.getX() - player.getX())) + Math.PI / 2.0 + (p.getX() - player.getX() <= 0 ? 0 : Math.PI);
 
                 //p.rot = Math.atan((p.getX() - player.getX()) / (p.getY() - player.getY())) + Math.PI / 2.0;
 
-                double y = p.getY() - player.getY();
-                double x = p.getX() - player.getX();
-
-                if(x == 0)
-                    x = Double.MIN_VALUE;
-
-                //rotates players towards PC
-                p.rot = (Math.atan(y / x) + (((x + Math.abs(x)) / (2 * x)) * Math.PI) + (Math.PI / 2.0));
+                p.setRot(p.target);
 
             }
 
@@ -593,6 +856,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             {
 
                 explode(p, 5, 2);
+
+                p.alive = false;
 
                 setLists(p);
 
@@ -637,9 +902,9 @@ public class Panel extends JPanel implements ActionListener, KeyListener
                 Player p = pList.get(j);
 
                 //player hit detection, uses bounding box instead of circular collisions because maybe faster?
-                double collideDist = (proj.getSize() + p.getSize()) / 2.0;
 
-                if(proj.allegiance != p.allegiance && p.iFrames == 0 && Math.abs(p.getX() - projX) < collideDist && Math.abs(p.getY() - projY) < collideDist)
+                //if(proj.allegiance != p.allegiance && p.iFrames == 0 && Math.abs(p.getX() - projX) < collideDist && Math.abs(p.getY() - projY) < collideDist)
+                if(proj.allegiance != p.allegiance && p.iFrames == 0 && Math.abs(p.getX() - projX) < (proj.getSize() + p.getSizeX() / 2.0) && Math.abs(p.getY() - projY) < (proj.getSize() + p.getSizeY() / 2.0))
                 {
 
                     p.hp -= 5;
@@ -683,8 +948,8 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             else if(emit.anchor != null)
             {
 
-                emit.setX(emit.anchor.getX());
-                emit.setY(emit.anchor.getY());
+                emit.setX(emit.anchor.getX() + emit.xOffset);
+                emit.setY(emit.anchor.getY() + emit.yOffset);
 
             }
 
@@ -714,11 +979,34 @@ public class Panel extends JPanel implements ActionListener, KeyListener
 
                         //Projectile proj = new Projectile(emit, emit.props[1], emit.props[2]);
 
-                        setLists(proj, new int[]{0, 1, 0, 1, 1});
+                        setLists(proj, new int[]{0, 1, 0, 1, 1, 0});
 
                     }
                     
                     break;
+
+            }
+
+        }
+
+        //prompt specific code
+        for(int i = 0; i < promptList.size(); i++)
+        {
+
+            Prompt prompt = promptList.get(i);
+
+            if(prompt.anchor != null)
+            {
+
+                prompt.x = prompt.anchor.getX();
+                prompt.y = prompt.anchor.getY();
+
+            }
+
+            if(levelTime > prompt.birth + prompt.life)
+            {
+
+                setLists(prompt);
 
             }
 
@@ -734,7 +1022,7 @@ public class Panel extends JPanel implements ActionListener, KeyListener
             
             // p.decayFactor = 1;
 
-            // setLists(p, new int[]{1, 0, 0, 1, 1});
+            // setLists(p, new int[]{1, 0, 0, 1, 1, 0});
 
         }
 
@@ -755,48 +1043,27 @@ public class Panel extends JPanel implements ActionListener, KeyListener
         {
 
             //System.out.println("here" + levelTime);
-            
-            for(Player p : currentLevel.Players.get(0))
-            {
-
-                setLists(p, new int[]{1, 0, 0, 1, 1});
-
-            }
-
-            for(Emitter emit : currentLevel.Emitters.get(0))
-            {
-
-                emit.birth = System.currentTimeMillis();
-                setLists(emit, new int[]{0, 0, 1, 0, 0});
-
-            }
+            initPhase();
 
             currentLevel.Times.remove(0);
-            currentLevel.Players.remove(0);
-            currentLevel.Emitters.remove(0);
 
         }
-        else if (currentLevel.Times.size() == 0 && pList.size() == 1 && pList.contains(player) && false)
+        else if (levelIndex < maxLevel && currentLevel.Times.size() == 0 && pList.size() == 1 && pList.contains(player))
         {
 
             //TODO load next level
+
+            System.out.println("Loading level " + (levelIndex + 1) + ".");
             loadLevel(levels.get(++levelIndex));
+
+    
 
         }
 
         levelScripts(levelIndex);
 
         levelTime += t.getDelay();
-
-        if(fc % 200 == 0 && fc < 1000)
-        {
-
-            explode(rand(0, 300), rand(0, SCREEN_HEIGHT), 25, 1);
-            explode(rand(SCREEN_WIDTH - 300, SCREEN_WIDTH), rand(0, SCREEN_HEIGHT), 25, 1);
-
-        }
              
-         
         //iterates frame counter
         fc++;
 
